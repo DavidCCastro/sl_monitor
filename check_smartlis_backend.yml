@@ -1,0 +1,20 @@
+- hosts: "{{ servers }}"
+  gather_facts: false
+  
+  tasks:
+  - name: Check smartlis url
+    ignore_errors: yes
+    uri:
+      url: http://{{ slwww_keepalived_ip }}/system/about
+    register: output
+
+  - name: Send message when url is not working
+    delegate_to: "{{ delegate_to }}"
+    slack:
+      token: "{{ slack_token }}"
+      msg: "Smartlis url not working {{ output.url }} --> {{ output.msg }}"
+    when: output.failed == true
+    
+  - name: fail when url is not working
+    fail:
+    when: output.failed == true

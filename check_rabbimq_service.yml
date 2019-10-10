@@ -1,0 +1,17 @@
+- hosts: "{{ servers }}"
+  user: smartlis
+    
+  tasks:
+  - name: Checking rabbitmq service is up
+    become: yes
+    become_method: sudo
+    command: service rabbitmq-server status
+    ignore_errors: yes
+    register: rabbitmq_status
+   
+  - name: debug outuput to find "inactive" status on stdout
+    delegate_to: "{{ delegate_to }}"
+    slack:
+      token: "{{ slack_token }}"
+      msg: "{{ ansible_hostname }} rabbitmq service is not working"
+    when: rabbitmq_status.stdout.find("inactive") != -1

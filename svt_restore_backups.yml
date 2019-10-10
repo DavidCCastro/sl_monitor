@@ -1,0 +1,75 @@
+- hosts: localhost
+  gather_facts: no
+  
+  tasks:
+  - name: Get auth token
+    uri:
+      url: https://simplivity@{{ omnicube }}/api/oauth/token
+      method: POST
+      body: grant_type=password&username={{ vcenter_user }}&password={{ vcenter_pass }}
+      return_content: yes
+      headers:
+        Content-Type: application/x-www-form-urlencoded
+      validate_certs: no
+    register: token
+
+  - name: Get backups
+    uri:
+      url: https://{{ omnicube }}/api/backups?virtual_machine_name={{ item }}&omnistack_cluster_name=HUVMSVTCL01&limit=1
+      method: GET
+      headers:
+        Accept: application/vnd.simplivity.v1+json
+        Authorization: Bearer {{ token.json.access_token }}
+      validate_certs: no
+    loop:
+      - SE00SARTL
+      - SE00SATML
+      - SE00SBCL1
+      - SE00SBCL2
+      - SE00SBDL1
+      - SE00SBDL2
+      - SE00SBKL1
+      - SE00SBUL1
+      - SE00SBUL2
+      - SE00SDSL1
+      - SE00SDSL2
+      - SE00SGCL1
+      - SE00SGCL2
+      - SE00SGDL1
+      - SE00SGDL2
+      - SE00SGDL3
+      - SE00SGDL4
+      - SE00SILPL
+      - SE00SITKL
+      - SE00SWWL1
+      - SE00SWWL2
+      - SE41SAP88
+      - SE40SAP82
+    register: backups
+    until: backups.json.backups.0.state == 'PROTECTED'
+    retries: 3
+    delay: 10
+    ignore_errors: yes
+
+  - name: Restore Backup
+    uri:
+      url: https://{{ omnicube }}/api/backups/{{ item.json.backups.0.id }}/restore?restore_original=false
+      method: POST
+      headers:
+        Content-Type: application/vnd.simplivity.v1+json
+        Authorization: Bearer {{ token.json.access_token }}
+      body: "{\"virtual_machine_name\": \"{{ item.json.backups.0.virtual_machine_name }}_BACKUP\", \"datastore_id\": \"9d23f735-2ac7-4b9c-af5b-efabd1330f1b\"}"
+      validate_certs: no
+      body_format: json
+      status_code: 202
+    with_items:
+      - "{{ backups.results }}"
+    when: item.json.backups.0.state == 'PROTECTED'
+    
+  - name: Send message when VM Backup state is not PROTECTED
+    slack:
+      token: "{{ slack_token }}"
+      msg: "{{ item.json.backups.0.virtual_machine_name }} state is {{ item.json.backups.0.state }}"
+    loop: "{{ backups.results }}"
+    when: item.json.backups.0.state != 'PROTECTED'
+    delegate_to: "{{ delegate_to }}"

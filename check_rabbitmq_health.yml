@@ -1,0 +1,44 @@
+- hosts: localhost
+  
+  tasks:
+  - name: Get rabbitmq nodes info
+    uri:
+      url: http://{{ servers }}:15672/api/nodes
+      user: guest
+      password: guest
+      return_content: yes
+    register: rabbitmq_health
+    
+  - name: Send message when rabbitmq mem_alarm=true
+    slack:
+      token: "{{ slack_token }}"
+      msg: "{{ item.name }} WARNING Memory Alarm={{ item.mem_alarm }}"
+    with_items:
+      - "{{ rabbitmq_health.json }}"
+    when: item.mem_alarm == true
+    delegate_to: "{{ delegate_to }}"
+    
+  - name: Send message when rabbitmq disk_free_alarm=true
+    slack:
+      token: "{{ slack_token }}"
+      msg: "{{ item.name }} WARNING Disk Free Alarm={{ item.disk_free_alarm }}"
+    with_items:
+      - "{{ rabbitmq_health.json }}"
+    when: item.disk_free_alarm == true
+    delegate_to: "{{ delegate_to }}"
+    
+  - name: Get rabbitmq queues info
+    uri:
+      url: http://{{ servers }}:15672/api/queues
+      user: guest
+      password: guest
+      return_content: yes
+    register: rabbitmq_queues
+
+  - name: Send message when rabbitmq queue "messages ready" value is greater than 50K
+    slack:
+      token: "{{ slack_token }}"
+      msg: "{{ item.node }} queue name {{ item.name }} has {{ item.messages_ready }} messages ready, maybe the consumer is not working properly..."
+    loop: "{{ rabbitmq_queues.json }}"
+    when: item.messages_ready > 50000
+    delegate_to: "{{ delegate_to }}"

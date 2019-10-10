@@ -1,0 +1,45 @@
+- hosts: "{{ servers }}"
+  user: smartlis
+    
+  tasks:
+  - name: Checking apache2 service is up
+    become: yes
+    become_method: sudo
+    command: service apache2 status
+    ignore_errors: yes
+    register: apache2_status
+   
+  - name: debug outuput to find "inactive" status on stdout
+    delegate_to: "{{ delegate_to }}"
+    slack:
+      token: "{{ slack_token }}"
+      msg: "{{ ansible_hostname }} apache2 service is not working"
+    when: apache2_status.stdout.find("inactive") != -1
+    
+  - name: Checking tomcat service is up
+    become: yes
+    become_method: sudo
+    command: service tomcat7 status
+    ignore_errors: yes
+    register: tomcat_status
+   
+  - name: debug outuput to find "inactive" status on stdout
+    delegate_to: "{{ delegate_to }}"
+    slack:
+      token: "{{ slack_token }}"
+      msg: "{{ ansible_hostname }} tomcat service is not working"
+    when: tomcat_status.stdout.find("inactive") != -1
+    
+  - name: Checking keepalived service is up
+    become: yes
+    become_method: sudo
+    command: service keepalived status
+    ignore_errors: yes
+    register: keepalived_status
+   
+  - name: debug outuput to find "inactive" status on stdout
+    delegate_to: "{{ delegate_to }}"
+    slack:
+      token: "{{ slack_token }}"
+      msg: "{{ ansible_hostname }} keepalived service is not working"
+    when: keepalived_status.stdout.find("inactive") != -1

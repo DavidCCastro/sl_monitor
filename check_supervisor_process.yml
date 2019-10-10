@@ -1,0 +1,30 @@
+- hosts: "{{ servers }}"
+    
+  tasks:
+  - name: Check supervisor status
+    become: yes
+    shell: supervisorctl status
+    register: supervisor_status
+
+  - name: Send message when supervisor process is not running
+    slack:
+      token: "{{ slack_token }}"
+      msg: "{{ ansible_hostname }} {{ item.split()[0] }} is {{ item.split()[1] }}"
+    loop: "{{ supervisor_status.stdout_lines }}"
+    when: ("{{ item.split()[1] }}" == 'EXITED') or ("{{ item.split()[1] }}" == 'FATAL')
+    delegate_to: "{{ delegate_to }}"
+    
+  - name: Restart supervisor process if status is FATAL or EXITED
+    become: yes
+    shell: supervisorctl start {{ item.split()[0] }}
+    loop: "{{ supervisor_status.stdout_lines }}"
+    when: ("{{ item.split()[1] }}" == 'EXITED') or ("{{ item.split()[1] }}" == 'FATAL')
+    register: supervisor_started
+    
+  - name: Send message when a supervisor process is restarted
+    slack:
+      token: "{{ slack_token }}"
+      msg: "{{ ansible_hostname }} trying to start process {{ item.stdout }}"
+    loop: "{{ supervisor_started.results }}"
+    when: item.stdout is defined
+    delegate_to: "{{ delegate_to }}"

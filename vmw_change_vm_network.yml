@@ -1,0 +1,40 @@
+- hosts: localhost
+
+  tasks:
+  - name: Change Network
+    vmware_guest:
+      hostname: '{{ vcenter_host }}'
+      username: '{{ vcenter_user }}'
+      password: '{{ vcenter_pass }}'
+      datacenter: HUVM
+      validate_certs: no
+      name: "{{ item }}"
+      state: present
+      force: yes
+      networks:
+      - name: SL_Test
+    ignore_errors: yes
+    loop:
+      - SE00SARTL_BACKUP
+      - SE00SATML_BACKUP
+      - SE00SBCL1_BACKUP
+      - SE00SBCL2_BACKUP
+      - SE00SBDL1_BACKUP
+      - SE00SBDL2_BACKUP
+      - SE00SBKL1_BACKUP
+      - SE00SBUL1_BACKUP
+      - SE00SBUL2_BACKUP
+      - SE00SDSL1_BACKUP
+      - SE00SDSL2_BACKUP
+      - SE00SGCL1_BACKUP
+      - SE00SGCL2_BACKUP
+      - SE00SGDL1_BACKUP
+      - SE00SGDL2_BACKUP
+      - SE00SGDL3_BACKUP
+      - SE00SGDL4_BACKUP
+      - SE00SILPL_BACKUP
+      - SE00SITKL_BACKUP
+      - SE00SWWL1_BACKUP
+      - SE00SWWL2_BACKUP
+      - SE41SAP88_BACKUP
+      - SE40SAP82_BACKUP

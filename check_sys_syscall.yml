@@ -1,0 +1,17 @@
+- hosts: "{{ servers }}"
+  
+  tasks:
+  - name: Check sys calls count
+    command: psql -d {{ log_db }} -c "select case when cantidad<100 then 'OK' when cantidad<250 then 'Warning' else 'Danger' end AS Resultado from ( select count(*) Cantidad from public.sys_call_log where ms > 30000 and date_part('day',dtcrea)=date_part('day',CURRENT_TIMESTAMP) and date_part('hour', dtcrea)=date_part('hour', CURRENT_TIMESTAMP)-1 	) AS Call_Log"
+    ignore_errors: yes
+    register: response_time
+  
+  - name: Send message when sys calls count is greater than 250 in the last hour
+    slack:
+      token: "{{ slack_token }}"
+      msg: "{{ item }} Número llamadas sistema superior a 30 segundos"
+    when: response_time.stdout.find("{{ item }}") != -1
+    with_items:
+      - "Warning"
+      - "Danger"
+    delegate_to: "{{ delegate_to }}"

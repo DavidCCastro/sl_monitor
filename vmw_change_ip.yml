@@ -1,0 +1,20 @@
+- hosts: localhost
+
+  tasks:
+  - name: Change Network
+    vmware_guest:
+      hostname: '{{ vcenter_host }}'
+      username: '{{ vcenter_user }}'
+      password: '{{ vcenter_pass }}'
+      datacenter: HUVM
+      validate_certs: no
+      name: "{{ item.name }}"
+      state: poweredon
+      force: yes
+      networks:
+      - name: SL_Test
+        ip: "{{ item.ip }}"
+        netmask: 255.255.255.0
+      wait_for_ip_address: yes
+    loop:
+      - { name: "SE00SBCL1_BACKUP", ip: "192.1.1.100" }

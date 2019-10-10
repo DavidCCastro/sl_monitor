@@ -1,0 +1,17 @@
+- hosts: "{{ servers }}"
+  user: smartlis
+    
+  tasks:
+  - name: Checking elasticsearch service is up
+    become: yes
+    become_method: sudo
+    command: service elasticsearch status
+    ignore_errors: yes
+    register: elasticsearch_status
+   
+  - name: debug outuput to find "inactive" status on stdout
+    delegate_to: "{{ delegate_to }}"
+    slack:
+      token: "{{ slack_token }}"
+      msg: "{{ ansible_hostname }} elasticsearch service is not working"
+    when: elasticsearch_status.stdout.find("inactive") != -1

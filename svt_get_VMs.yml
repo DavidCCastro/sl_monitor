@@ -1,0 +1,27 @@
+- hosts: "{{ omnicube }}"
+  gather_facts: no
+  
+  tasks:
+  - name: Get auth token
+    uri:
+      url: https://simplivity@{{ omnicube }}/api/oauth/token
+      method: POST
+      body: grant_type=password&username={{ vcenter_user }}&password={{ vcenter_pass }}
+      return_content: yes
+      headers:
+        Content-Type: application/x-www-form-urlencoded
+      validate_certs: no
+    register: token
+
+  - name: Get VMs
+    uri:
+      url: https://{{ omnicube }}/api/virtual_machines
+      headers:
+        Accept: application/vnd.simplivity.v1+json
+        Authorization: Bearer {{ token.json.access_token }}
+      validate_certs: no
+    register: VMs
+    
+  - name: debug
+    debug:
+      var: VMs

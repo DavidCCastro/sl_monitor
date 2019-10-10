@@ -1,0 +1,17 @@
+- hosts: localhost
+
+  tasks:
+  - name: Provide information about vCenter
+    vmware_datastore_facts:
+      hostname: '{{ vcenter_host }}'
+      username: '{{ vcenter_user }}'
+      password: '{{ vcenter_pass }}'
+      datacenter: HUVR
+      name: HUVR_INFDATASTORE
+      validate_certs: no
+    delegate_to: localhost
+    register: vcenter_about_info
+    
+  - name: debug info
+    debug:
+      var: vcenter_about_info

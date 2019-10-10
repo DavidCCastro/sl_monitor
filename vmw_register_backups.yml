@@ -1,0 +1,22 @@
+- hosts: "{{ esx_node }}"
+  gather_facts: no
+  
+  tasks:
+  - name: list vmx files
+    find:
+      path: /vmfs/volumes/HUVM_Restore
+      patterns: '*.vmx'
+      recurse: yes
+    register: files
+  
+  - name: Edit vmx file displayName parameter
+    shell: sed -i '/displayName/ s/.$/_BACKUP&/' {{ item.path }}
+    with_items: 
+      - "{{ files.files }}"
+    args:
+      warn: false
+      
+  - name: Register Backups
+    shell: vim-cmd solo/registervm {{ item.path }}
+    with_items:
+      - "{{ files.files }}"

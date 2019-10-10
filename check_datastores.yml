@@ -1,0 +1,28 @@
+- hosts: localhost
+
+  tasks:
+  - name: Provide information about vCenter
+    vmware_datastore_facts:
+      hostname: "{{ vcenter_host }}"
+      username: "{{ vcenter_user }}"
+      password: "{{ vcenter_pass }}"
+      cluster: "{{ cluster }}"
+      validate_certs: no
+    register: datastore_info
+    
+  - name: "Ensure that free space is greater than 20%"
+    assert:
+      that: 
+        - item.freeSpace > item.capacity|float * 0.2
+      msg: "datastore {{ item.name }} space has reached 80% threshold"
+    loop: "{{ datastore_info.datastores }}"
+    ignore_errors: yes
+    register: datastore_space
+      
+  - name: Send message when free space is less than 20%
+    slack:
+      token: "{{ slack_token }}"
+      msg: "Datastore {{ item.item.name }} < 20% free space, {{ (item.item.freeSpace / 1024|pow(3)) | int }}GB available"
+    loop: "{{ datastore_space.results }}"
+    when: item.failed == true
+    delegate_to: "{{ delegate_to }}"

@@ -1,0 +1,36 @@
+- hosts: localhost
+  gather_facts: no
+  
+  tasks:
+  - name: Get auth token
+    uri:
+      url: https://simplivity@{{ omnicube }}/api/oauth/token
+      method: POST
+      body: grant_type=password&username={{ vcenter_user }}&password={{ vcenter_pass }}
+      return_content: yes
+      headers:
+        Content-Type: application/x-www-form-urlencoded
+      validate_certs: no
+    register: token
+
+  - name: Get backups
+    uri:
+      url: https://{{ omnicube }}/api/backups?virtual_machine_name={{ item }}&omnistack_cluster_name=HUVMSVTCL01&limit=1
+      headers:
+        Accept: application/vnd.simplivity.v1+json
+        Authorization: Bearer {{ token.json.access_token }}
+      validate_certs: no
+    loop:
+      - SE00SGDL1
+      - SE00SGDL2
+      - SE00SBDL1
+      - SE00SBDL2
+    register: backups
+    until: backups.json.backups.0.state == 'PROTECTED'
+    retries: 10
+    delay: 10
+    ignore_errors: yes
+
+  - name: debug
+    debug:
+      var: backups

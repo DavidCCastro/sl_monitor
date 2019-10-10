@@ -1,0 +1,26 @@
+- hosts: "{{ servers }}"
+
+  tasks:
+  - name: Check Tomcat7 service status
+    win_command: powershell.exe "Get-Service -Name Tomcat7 | Select-Object Status | ConvertTo-Json"
+    register: tomcat7_status
+
+  - name: Send message if Tomcat7 is not running
+    delegate_to: "{{ delegate_to }}"
+    remote_user: "{{ delegation_user }}"
+    slack:
+      token: "{{ slack_token }}"
+      msg: "{{ ansible_hostname }} Tomcat7 service is not working"
+    when: tomcat7_status.stdout.find("4") == -1
+    
+  - name: Check mysql service status
+    win_command: powershell.exe "Get-Service -Name mysql | Select-Object Status | ConvertTo-Json"
+    register: mysql_status
+
+  - name: Send message if mysql is not running
+    delegate_to: "{{ delegate_to }}"
+    remote_user: "{{ delegation_user }}"
+    slack:
+      token: "{{ slack_token }}"
+      msg: "{{ ansible_hostname }} mysql service is not working"
+    when: mysql_status.stdout.find("4") == -1

@@ -1,0 +1,45 @@
+- hosts: localhost
+  gather_facts: no
+  
+  tasks:
+  - name: Get orders     
+    uri:
+      url: "{{ atom_orders_url }}"
+      url_username: "{{ atom_user }}"
+      url_password: "{{ atom_pass }}"
+      force_basic_auth: yes
+      return_content: yes
+    ignore_errors: yes
+    register: get_orders
+    
+  - name: Send message when task "Get orders" fail
+    delegate_to: "{{ delegate_to }}"
+    slack:
+      token: "{{ slack_token }}"
+      msg: "Get order from Atom failed {{ get_orders.url }} --> {{ get_orders.msg }}"
+    when: get_orders.failed == true
+    
+  - name: fail tasks when Atom is not working
+    fail:
+    when: get_orders.failed == true
+    
+  - name: Get report     
+    uri:
+      url: "{{ atom_report_url }}"
+      url_username: "{{ atom_user }}"
+      url_password: "{{ atom_pass }}"
+      force_basic_auth: yes
+      return_content: yes
+    ignore_errors: yes
+    register: get_report
+    
+  - name: Send message when task "Get report" fail
+    delegate_to: "{{ delegate_to }}"
+    slack:
+      token: "{{ slack_token }}"
+      msg: "Get report from Atom failed {{ get_report.url }} --> {{ get_report.msg }}"
+    when: get_report.failed == true
+    
+  - name: fail tasks when Atom is not working
+    fail:
+    when: get_report.failed == true

@@ -1,0 +1,16 @@
+- hosts: "{{ isolated_node }}"
+  gather_facts: no
+  
+  tasks:
+  - name: Pinging smartlis servers
+    command: ping -c 4 {{ item }}
+    loop: "{{ servers }}"
+    ignore_errors: yes
+    register: ping_result
+    
+  - name: Send message when a server not responds to ping
+    slack:
+      token: "{{ slack_token }}"
+      msg: "{{ item.item }} is not respondig to ping"
+    loop: "{{ ping_result.results }}"
+    when: item.failed == true

@@ -1,0 +1,50 @@
+- hosts: "{{ servers }}"
+
+  tasks:
+  - name: Check ilp service status
+    win_command: powershell.exe "Get-Service -Name ilp | Select-Object Status | ConvertTo-Json"
+    register: ilp_status
+
+  - name: Send message if ilp is not running
+    delegate_to: "{{ delegate_to }}"
+    remote_user: "{{ delegation_user }}"
+    slack:
+      token: "{{ slack_token }}"
+      msg: "{{ ansible_hostname }} ilp service is not working"
+    when: ilp_status.stdout.find("4") == -1
+    
+  - name: Check ilp_postgres service status
+    win_command: powershell.exe "Get-Service -Name ilp_postgres | Select-Object Status | ConvertTo-Json"
+    register: ilp_postgres_status
+
+  - name: Send message if ilp_postgres is not running
+    delegate_to: "{{ delegate_to }}"
+    remote_user: "{{ delegation_user }}"
+    slack:
+      token: "{{ slack_token }}"
+      msg: "{{ ansible_hostname }} ilp_postgres service is not working"
+    when: ilp_postgres_status.stdout.find("4") == -1
+    
+  - name: Check ilp_mirth service status
+    win_command: powershell.exe "Get-Service -Name ilp_mirth | Select-Object Status | ConvertTo-Json"
+    register: ilp_mirth_status
+
+  - name: Send message if ilp_mirth is not running
+    delegate_to: "{{ delegate_to }}"
+    remote_user: "{{ delegation_user }}"
+    slack:
+      token: "{{ slack_token }}"
+      msg: "{{ ansible_hostname }} ilp_mirth service is not working"
+    when: ilp_mirth_status.stdout.find("4") == -1
+    
+  - name: Check ilp_elasticsearch service status
+    win_command: powershell.exe "Get-Service -Name ilp_elasticsearch | Select-Object Status | ConvertTo-Json"
+    register: ilp_elasticsearch_status
+
+  - name: Send message if ilp_elasticsearch is not running
+    delegate_to: "{{ delegate_to }}"
+    remote_user: "{{ delegation_user }}"
+    slack:
+      token: "{{ slack_token }}"
+      msg: "{{ ansible_hostname }} ilp_elasticsearch service is not working"
+    when: ilp_elasticsearch_status.stdout.find("4") == -1

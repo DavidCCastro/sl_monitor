@@ -1,0 +1,30 @@
+- hosts: "{{ servers }}"
+
+  tasks:
+  - name: Gather disk facts
+    win_disk_facts:
+
+  - name: Ensure that free space is greater than 20%
+    assert:
+      that: 
+        - disk.1.volumes.0.size_remaining > disk.1.volumes.0.size|float * 0.2
+      msg: "disk space has reached 80% threshold"
+    with_subelements:
+      - "{{ ansible_disks }}"
+      - partitions
+      - flags:
+        skip_missing: true
+    loop_control:
+      loop_var: disk
+    ignore_errors: yes
+    register: volumes
+
+  - name: Send message when free space is less than 20%
+    slack:
+      token: "{{ slack_token }}"
+      msg: "{{ ansible_hostname }} unidad {{ item.disk.1.drive_letter }}: < 20% free space {{ ((item.disk.1.volumes.0.size_remaining / 1024) / 1024) | int }}MB available"
+    with_items:
+      - "{{ volumes.results }}"
+    when: item.failed == true
+    delegate_to: "{{ delegate_to }}"
+    remote_user: "{{ delegation_user }}"
