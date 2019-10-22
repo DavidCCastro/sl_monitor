@@ -1,0 +1,10 @@
+- hosts: "{{ servers }}"
+
+  tasks:
+  - name: Check ensemble service status
+    win_command: powershell.exe "(Get-Counter "\Proceso(*)\% de tiempo de procesador").CounterSamples | Select InstanceName, @{Name="CPU %";Expression={[Decimal]::Round(($_.CookedValue / {{ ansible_processor_cores }}), 2)}} | sort *CPU* -Descending | select -First 5"
+    register: cpu_usage
+
+  - name: debug
+    debug:
+      var: cpu_usage
