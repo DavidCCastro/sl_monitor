@@ -1,0 +1,26 @@
+---
+- name: Get elastic cluster info
+    uri:
+      url: http://{{ elastic_servers }}:9200/_cluster/health
+      return_content: yes
+      use_proxy: no
+    register: cluster_health
+    
+  - name: Send message when elastic cluster health is not green
+    slack:
+      token: "{{ slack_token }}"
+      msg: Elasticsearch cluster status is {{ item.status }}, maybe one node is down.
+    loop: 
+      - "{{ cluster_health.json }}"
+    when: item.status != 'green'
+    delegate_to: "{{ delegate_to }}"
+    
+  - name: Send message when elastic cluster is relocating shards
+    slack:
+      token: "{{ slack_token }}"
+      msg: Elasticsearch cluster is relocating shards, shards being relocated={{ item.relocating_shards }}.
+    loop: 
+      - "{{ cluster_health.json }}"
+    when: item.relocating_shards > 0
+    delegate_to: "{{ delegate_to }}"
+

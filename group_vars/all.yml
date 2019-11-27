@@ -1,0 +1,6 @@
+---
+# token variables
+slack_token_alarms_sevilla: "T9N25BYMC/BQPGR3F27/u6p7oLmLHSrCvdHHe5paZNPz"
+slack_token_alarms_aviles: "T9N25BYMC/BR373DCHL/olTuMEwfo3OETtdDBL0sv3NJ"
+slack_token_alarms_negrin: "T9N25BYMC/BQT35MG1F/x3JkzlQTMDUefeE2ivoCNm9s"
+slack_token_alarms_tests: "T9N25BYMC/BEJ5TU0MP/UkjPmJsB7d1D0BAA2Belyjxf"

@@ -1,0 +1,9 @@
+---
+- name: check couchdb status
+    uri:
+      url: http://{{ slwww_keepalived_ip }}:5984
+    register: response_couchdb
+    until: response_couchdb.json.couchdb == 'Welcome'
+    retries: 2
+    delay: 5
+
