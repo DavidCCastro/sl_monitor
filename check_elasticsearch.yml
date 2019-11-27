@@ -1,0 +1,7 @@
+- name: check couchdb
+  gather_facts: true
+  hosts: localhost
+  become: true
+  become_user: root
+  roles:
+    - elastic
