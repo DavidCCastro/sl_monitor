@@ -1,2 +1,2 @@
 ---
-elastic_servers: "{{ groups['slelastic'][0] }}"
+elastic_servers: "{{ groups['slelastic'] }}"
