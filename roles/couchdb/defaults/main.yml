@@ -1,0 +1,2 @@
+---
+couchdb_server: "{{ groups['sldata'] }}"

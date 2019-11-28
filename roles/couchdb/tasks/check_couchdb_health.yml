@@ -1,9 +1,19 @@
 ---
 - name: check couchdb status
-    uri:
-      url: http://{{ slwww_keepalived_ip }}:5984
-    register: response_couchdb
-    until: response_couchdb.json.couchdb == 'Welcome'
-    retries: 2
-    delay: 5
+  uri:
+    url: http://{{ slwww_keepalived_ip }}:5984
+  register: response_couchdb
+#  until: response_couchdb.json.couchdb == 'Welcome'
+  retries: 2
+  delay: 5
+  ignore_errors: yes
 
+- name: debug
+  debug:
+    var: response_couchdb
+
+- name: Send message when couchdb is not working
+  slack:
+    token: "{{ slack_token_alarms_tests }}"
+    msg: Couchdb
+  when: response_couchdb.failed == true

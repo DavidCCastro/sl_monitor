@@ -1,0 +1,6 @@
+- name: check couchdb
+  gather_facts: true
+  hosts: localhost
+  roles:
+    - elastic
+    - couchdb

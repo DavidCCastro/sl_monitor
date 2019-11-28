@@ -7,21 +7,17 @@
   loop: "{{ elastic_servers | list }}"
   register: cluster_health
 
-- name: debug
-  debug:
-    var: cluster_health
-    
 - name: Send message when elastic cluster health is not green
   slack:
-    token: "{{ slack_token }}"
+    token: "{{ slack_token_alarms_tests }}"
     msg: Elasticsearch cluster status is {{ item.json.status }}, maybe one node is down.
   loop: "{{ cluster_health.results }}"
-  when: item.json.status == 'green'
+  when: item.json.status != 'green'
 #  delegate_to: "{{ delegate_to }}"
     
 - name: Send message when elastic cluster is relocating shards
   slack:
-    token: "{{ slack_token }}"
+    token: "{{ slack_token_alarms_tests }}"
     msg: Elasticsearch cluster is relocating shards, shards being relocated={{ item.json.relocating_shards }}.
   loop: "{{ cluster_health.results }}"
   when: item.json.relocating_shards > 0
