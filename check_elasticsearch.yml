@@ -1,6 +1,5 @@
 - name: check couchdb
   gather_facts: true
   hosts: localhost
-  become: yes
   roles:
     - elastic
