@@ -4,7 +4,7 @@
     url: http://{{ item }}:9200/_cluster/health
     return_content: yes
     use_proxy: no
-  loop: "{{ elastic_servers }}"
+  loop: "{{ elastic_servers | list }}"
   register: cluster_health
 
 - name: debug
