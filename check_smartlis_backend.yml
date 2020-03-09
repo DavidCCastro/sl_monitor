@@ -1,4 +1,4 @@
-- hosts: "{{ servers }}"
+- hosts: localhost
   gather_facts: false
   
   tasks:
@@ -9,9 +9,9 @@
     register: output
 
   - name: Send message when url is not working
-    delegate_to: "{{ delegate_to }}"
+    delegate_to: localhost
     slack:
-      token: "{{ slack_token }}"
+      token: T9N25BYMC/BEJ5TU0MP/UkjPmJsB7d1D0BAA2Belyjxf
       msg: "Smartlis url not working {{ output.url }} --> {{ output.msg }}"
     when: output.failed == true
     
@@ -20,8 +20,8 @@
       name: SysMain
       state: restarted
     when: output.failed == true
-    delegate_to: "{{ ilp_server }}"
-    remote_user: "{{ delegation_user }}"
+    delegate_to: srvwsus
+    remote_user: WSUS_Server
     register: service
 
   - name: debug
