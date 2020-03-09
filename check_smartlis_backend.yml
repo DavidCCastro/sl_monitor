@@ -15,6 +15,19 @@
       msg: "Smartlis url not working {{ output.url }} --> {{ output.msg }}"
     when: output.failed == true
     
+  - name: restart ilp service when output=failed
+    win_service:
+      name: SysMain
+      state: restarted
+    when: output.failed == true
+    delegate_to: "{{ ilp_server }}"
+    remote_user: "{{ delegation_user }}"
+    register: service
+
+  - name: debug
+    debug:
+      msg: "{{ service }}"
+    
   - name: fail when url is not working
     fail:
     when: output.failed == true
