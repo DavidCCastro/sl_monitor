@@ -21,7 +21,7 @@
       state: restarted
     when: output.failed == true
     delegate_to: srvwsus
-    remote_user: WSUS_Server
+    remote_user: Administrador
     register: service
 
   - name: debug
