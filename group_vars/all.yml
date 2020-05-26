@@ -5,4 +5,4 @@ slack_token_alarms_aviles: "T9N25BYMC/BR373DCHL/olTuMEwfo3OETtdDBL0sv3NJ"
 slack_token_alarms_negrin: "T9N25BYMC/BQT35MG1F/x3JkzlQTMDUefeE2ivoCNm9s"
 slack_token_alarms_tests: "T9N25BYMC/BEJ5TU0MP/UkjPmJsB7d1D0BAA2Belyjxf"
 
-slwww_keepalived_ip: 192.1.1.231
+slwww_keepalived_ip: "{{ balanced_ip }}"
